@@ -22,7 +22,11 @@ interface AwsCredentialConfig {
 
 const AwsSsoLogin = async (profile: string) => {
   const loginProcess = exec(`aws sso login --profile ${profile}`);
-  await new Promise((resolve) => {
+  await new Promise((resolve, reject) => {
+    loginProcess.on("error", (e) => {
+      console.error(e);
+      reject();
+    });
     loginProcess.on("close", resolve);
   });
   console.log(`retrying credential set process`);
