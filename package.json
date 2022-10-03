@@ -1,13 +1,14 @@
 {
   "name": "aws-sso-credential-loader",
   "version": "0.1.0",
-  "description": "helper module to load AWS SSO credential for NodeJS cli applications",
+  "description": "a helper module to load AWS SSO credential for NodeJS cli applications",
   "main": "dist/index.js",
   "engines": {
     "node": ">=14"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
     "lint": "eslint . --ext .ts"
   },
   "keywords": [

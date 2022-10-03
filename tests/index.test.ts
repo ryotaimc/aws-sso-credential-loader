@@ -13,7 +13,7 @@ test("test main function ()", async () => {
   expect(typeof result.profileName).toBe("string");
 
   const s3Client = new S3Client({});
-  const response = await s3Client.send(new ListBucketsCommand({}))
+  const response = await s3Client.send(new ListBucketsCommand({}));
   console.log(JSON.stringify(response));
   expect(response.$metadata.httpStatusCode).toBe(200);
-})
+});
