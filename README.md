@@ -4,7 +4,7 @@
 
 - A helper module to load AWS SSO credential for NodeJS cli applications.
 
-- Use can select local aws profiles via cli. This module sets correspondent credentials of selected profile to NodeJS environment variables for aws-sdk modules in same process.
+- User can select local aws profiles via cli. This module sets correspondent credentials of selected profile to NodeJS environment variables. aws-sdk modules in same process can utilize those values/credentials to access specified aws environment.
 
 ## prerequisite
 
