@@ -2,6 +2,7 @@ import { fromSSO } from "@aws-sdk/credential-providers";
 import { loadSharedConfigFiles } from "@aws-sdk/shared-ini-file-loader";
 import inquirer from "inquirer";
 import { exec } from "child_process";
+import { stderr } from "process";
 
 const getRegionInput = async (): Promise<string> => {
   const prompt = inquirer.createPromptModule();
@@ -21,7 +22,17 @@ interface AwsCredentialConfig {
 }
 
 const AwsSsoLogin = async (profile: string) => {
-  const loginProcess = exec(`aws sso login --profile ${profile}`);
+  const loginProcess = exec(`aws sso login --profile ${profile}`, (err, stdout, stderr) => {
+    if (err) {
+      console.error(err);
+    }
+    if (stdout) {
+      console.log(stdout);
+    }
+    if (stderr) {
+      console.log(stderr);
+    }
+  });
   await new Promise((resolve, reject) => {
     loginProcess.on("error", (e) => {
       console.error(e);
