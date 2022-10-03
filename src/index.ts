@@ -9,9 +9,9 @@ const getRegionInput = async (): Promise<string> => {
     type: "input",
     name: "region",
     message: "input aws region"
-  })
+  });
   return region;
-}
+};
 
 interface AwsCredentialConfig {
   AWS_ACCESS_KEY_ID: string;
@@ -20,29 +20,34 @@ interface AwsCredentialConfig {
   AWS_REGION: string;
 }
 
+const AwsSsoLogin = async (profile: string) => {
+  const loginProcess = exec(`aws sso login --profile ${profile}`);
+  await new Promise((resolve) => {
+    loginProcess.on("close", resolve);
+  });
+  console.log(`retrying credential set process`);
+};
+
 export const setAwsSsoCredential = async (): Promise<{
   profileName: string;
-  accountId: string;
+  accountId: string | undefined;
+  roleName: string | undefined;
 }> => {
   const configs = await loadSharedConfigFiles();
   const prompt = inquirer.createPromptModule();
   const { profile } = await prompt({
     type: "list",
-    name: "profile",
+    name: 'profile',
     message: "select local profile",
-    choices: Object.keys(configs.configFile)
+    choices: Object.keys(configs.configFile),
   });
   const credentialProvider = fromSSO({
     profile: profile,
   });
   const localCredential = await credentialProvider().catch(async (e) => {
     if (e.name === "CredentialsProviderError") {
-      console.log(`CredentialProviderError: invoking SSO login process`);
-      const loginProcess = exec(`aws sso login --profile ${profile}`);
-      await new Promise((resolve) => {
-        loginProcess.on("close", resolve);
-      })
-      console.log(`retrying credential set process`);
+      console.log(`No credential found in local: invoking SSO login process`);
+      await AwsSsoLogin(profile);
       return await credentialProvider();
     } else {
       console.error(e);
@@ -55,11 +60,12 @@ export const setAwsSsoCredential = async (): Promise<{
     AWS_SECRET_ACCESS_KEY: localCredential.secretAccessKey,
     AWS_SESSION_TOKEN: localCredential.sessionToken,
     AWS_REGION: typeof localRegion === "string" ? localRegion : await getRegionInput()
-  }
+  };
   process.env = { ...process.env, ...credential };
   console.log(`${profile} credential set`);
   return {
     profileName: profile,
-    accountId: configs.configFile[profile].sso_account_id as string
+    accountId: configs.configFile[profile].sso_account_id,
+    roleName: configs.configFile[profile].sso_role_name
   };
 };
