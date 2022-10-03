@@ -6,6 +6,12 @@
 
 - Use can select local aws profiles via cli. This module sets correspondent credentials of selected profile to NodeJS environment variables for aws-sdk modules in same process.
 
+## prerequisite
+
+- aws-cli v2
+
+- .aws/config file under home folder which generated with `aws configure sso` command
+
 ## how to use
 
 ```typescript
