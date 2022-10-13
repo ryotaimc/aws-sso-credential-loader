@@ -52,8 +52,8 @@ export const setAwsSsoCredential = async (): Promise<{
     profile: profile,
   });
   const localCredential = await credentialProvider().catch(async (e) => {
-    if (e.name === "CredentialsProviderError") {
-      console.log(`No credential found in local: invoking SSO login process`);
+    if (e.name === "CredentialsProviderError" || e.name === "UnauthorizedException") {
+      console.log(`No valid credential found in local: invoking SSO login process`);
       await AwsSsoLogin(profile);
       return await credentialProvider();
     } else {
