@@ -1,6 +1,6 @@
 {
   "name": "aws-sso-credential-loader",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "a helper module to load AWS SSO credential for NodeJS cli applications",
   "main": "dist/index.js",
   "engines": {
