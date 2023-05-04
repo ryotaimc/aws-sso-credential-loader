@@ -2,13 +2,14 @@ import { fromSSO } from "@aws-sdk/credential-providers";
 import { loadSharedConfigFiles } from "@aws-sdk/shared-ini-file-loader";
 import inquirer from "inquirer";
 import { spawn } from "child_process";
+import { profile } from "console";
 
 const getRegionInput = async (): Promise<string> => {
   const prompt = inquirer.createPromptModule();
   const { region } = await prompt({
     type: "input",
     name: "region",
-    message: "input aws region"
+    message: "input aws region",
   });
   return region;
 };
@@ -35,7 +36,9 @@ const AwsSsoLogin = async (profile: string) => {
   console.log(`setting credential`);
 };
 
-export const setAwsSsoCredential = async (awsProfileName?: string): Promise<{
+export const setAwsSsoCredential = async (
+  awsProfileName?: string
+): Promise<{
   profileName: string;
   accountId: string | undefined;
   roleName: string | undefined;
@@ -48,18 +51,25 @@ export const setAwsSsoCredential = async (awsProfileName?: string): Promise<{
     const prompt = inquirer.createPromptModule();
     const { profile } = await prompt({
       type: "list",
-      name: 'profile',
+      name: "profile",
       message: "select local profile",
       choices: Object.keys(configs.configFile),
     });
     selectedProfileName = profile;
   }
+  process.env.AWS_PROFILE = selectedProfileName;
+  console.log(`AWS_PROFILE set to ${selectedProfileName}`);
   const credentialProvider = fromSSO({
-    profile: selectedProfileName
+    profile: selectedProfileName,
   });
   const localCredential = await credentialProvider().catch(async (e) => {
-    if (e.name === "CredentialsProviderError" || e.name === "UnauthorizedException") {
-      console.log(`No valid credential found in local: invoking SSO login process`);
+    if (
+      e.name === "CredentialsProviderError" ||
+      e.name === "UnauthorizedException"
+    ) {
+      console.log(
+        `No valid credential found in local: invoking SSO login process`
+      );
       await AwsSsoLogin(selectedProfileName);
       return await credentialProvider();
     } else {
@@ -72,13 +82,14 @@ export const setAwsSsoCredential = async (awsProfileName?: string): Promise<{
     AWS_ACCESS_KEY_ID: localCredential.accessKeyId,
     AWS_SECRET_ACCESS_KEY: localCredential.secretAccessKey,
     AWS_SESSION_TOKEN: localCredential.sessionToken,
-    AWS_REGION: typeof localRegion === "string" ? localRegion : await getRegionInput()
+    AWS_REGION:
+      typeof localRegion === "string" ? localRegion : await getRegionInput(),
   };
   process.env = { ...process.env, ...credential };
   console.log(`${selectedProfileName} credential set`);
   return {
     profileName: selectedProfileName,
     accountId: configs.configFile[selectedProfileName].sso_account_id,
-    roleName: configs.configFile[selectedProfileName].sso_role_name
+    roleName: configs.configFile[selectedProfileName].sso_role_name,
   };
 };
